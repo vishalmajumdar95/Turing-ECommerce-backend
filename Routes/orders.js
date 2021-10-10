@@ -10,47 +10,45 @@ module.exports = (orders, knex) => {
             .where("cart_id", req.body.cart_id)
             .join("product", function() {
                 this.on('shopping_cart.product_id', 'product.product_id')
+            }).then((data) => {
+                knex("orders").insert({
+                        "total_amount": data[0].quantity * data[0].price,
+                        "created_on": new Date(),
+                        "shipping_id": req.body.shipping_id,
+                        "tax_id": req.body.tax_id
+                    }).then((result) => {
+                        knex("order_detail")
+                            .insert({
+                                "unit_cost": data[0].price,
+                                "quantity": data[0].quantity,
+                                "product_name": data[0].name,
+                                "attributes": data[0].attributes,
+                                "product_id": data[0].product_id,
+                                "order_id": result[0]
+                            })
+                            .then((inserting_data) => {
+                                console.log(inserting_data)
+                            }).catch((err) => {
+                                console.log(err)
+                                res.send({ error: err.message })
+                            })
+                    })
+                    .then((detail) => {
+                        knex.select("*").from("shopping_cart").where("cart_id", req.body.cart_id).delete()
+                            .then(() => {
+                                res.send({ "order Id": "orders successfully" })
+                            }).catch((err) => {
+                                console.log(err)
+                                res.send({ error: err.message })
+                            })
+                    }).catch(() => {
+                        console.log(err)
+                        res.send({ error: err.message })
+                    })
+            }).catch((err) => {
+                console.log(err)
+                res.send({ error: err.message })
             })
-
-        .then((data) => {
-            knex("orders").insert({
-                    "total_amount": data[0].quantity * data[0].price,
-                    "created_on": new Date(),
-                    "shipping_id": req.body.shipping_id,
-                    "tax_id": req.body.tax_id
-                }).then((result) => {
-                    knex("order_detail")
-                        .insert({
-                            "unit_cost": data[0].price,
-                            "quantity": data[0].quantity,
-                            "product_name": data[0].name,
-                            "attributes": data[0].attributes,
-                            "product_id": data[0].product_id,
-                            "order_id": result[0]
-                        })
-                        .then((inserting_data) => {
-                            console.log(inserting_data)
-                        }).catch((err) => {
-                            console.log(err)
-                            res.send({ error: err.message })
-                        })
-                })
-                .then((detail) => {
-                    knex.select("*").from("shopping_cart").where("cart_id", req.body.cart_id).delete()
-                        .then(() => {
-                            res.send({ "order Id": "orders successfully" })
-                        }).catch((err) => {
-                            console.log(err)
-                            res.send({ error: err.message })
-                        })
-                }).catch(() => {
-                    console.log(err)
-                    res.send({ error: err.message })
-                })
-        }).catch((err) => {
-            console.log(err)
-            res.send({ error: err.message })
-        })
     });
 
     // Get info about Order

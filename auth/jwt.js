@@ -3,8 +3,7 @@ const jwt = require('jsonwebtoken');
 // GenerateToken
 function generateToken(userdata) {
     return jwt.sign(userdata, 'vishal', { expiresIn: '24h' })
-}
-
+};
 
 // AuthenticateToken
 function authenticateToken(req, res, next) {
@@ -27,7 +26,6 @@ function authenticateToken(req, res, next) {
         console.log({ message: err.message })
         res.send({ message: err.message })
     }
-
 };
 
 

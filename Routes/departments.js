@@ -1,4 +1,5 @@
 module.exports = (department, knex) => {
+
     // get departments data
     department.get("/department", (req, res) => {
         knex.select('*').from('department')
