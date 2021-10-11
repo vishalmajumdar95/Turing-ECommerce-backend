@@ -18,7 +18,7 @@ function authenticateToken(req, res, next) {
         }
         jwt.verify(token, 'vishal', { expiresIn: '24h' }, (err, data) => {
             if (err) return res.sendStatus(403)
-            req.data = data
+            req.token_data = data
                 // console.log(data)
             next();
         })

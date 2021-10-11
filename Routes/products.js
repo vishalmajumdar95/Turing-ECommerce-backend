@@ -1,3 +1,5 @@
+const { generateToken, authenticateToken } = require('../auth/jwt');
+
 module.exports = (product, knex) => {
 
     // get all products
@@ -132,12 +134,37 @@ module.exports = (product, knex) => {
             })
     });
 
-    // Get review of a product
-    product.get("/product/:product_id/locations", (req, res) => {
-
-    });
 
     // post reviews of a Product
+    product.post('/product/:product_id/review', authenticateToken, (req, res) => {
+        knex.select("*").from('customer')
+            .where('customer_id', req.token_data.customer_id)
+            .then((data) => {
+                knex('review').insert({
+                    review: req.body.review,
+                    rating: req.body.rating,
+                    product_id: req.params.product_id,
+                    // created_on: new Date,
+                    customer_id: data[0].customer_id
+                }).then((data) => {
+                    res.send({ message: "review and rating" })
+                }).catch((err) => {
+                    res.send(err)
+                    console.log(err);
+                })
+            })
+    });
+
+
+    // Get review of a product
+    product.get('/product/:product_id/reviews', (req, res) => {
+        const product_id = req.params.product_id;
+        knex.select('*').from('review').where('product_id', product_id).then((data) => {
+            res.send(data)
+        }).catch((err) => {
+            res.send(err)
+        })
+    });
 
 
 };
